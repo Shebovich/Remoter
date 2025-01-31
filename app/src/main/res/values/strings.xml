@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">remoteandroid</string>
+    <string name="connection_connected">Connected to device %1$s</string>
+    <string name="connection_disconnected">Disconnected from device</string>
+    <string name="connection_failed">Connection failed\n</string>
+    <string name="connection_pairing_required">Pairing required</string>
+    <string name="connection_waiting">Waiting connection\n</string>
+    <string name="discovery_searching">Searching TV\'s</string>
+    <string name="discovery_failed">No TV\'s found</string>
+    <string name="discovery_updated">"Founded TV's: %1$s"</string>
 </resources>

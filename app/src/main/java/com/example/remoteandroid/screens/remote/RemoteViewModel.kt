@@ -7,15 +7,13 @@ import com.example.remoteandroid.domain.models.ConnectionState
 import com.example.remoteandroid.domain.models.DiscoveryState
 import com.example.remoteandroid.domain.usecase.ConnectToDeviceUseCase
 import com.example.remoteandroid.domain.usecase.FindDeviceUseCase
+import com.example.remoteandroid.domain.usecase.SendPairingCodeUseCase
 import com.example.remoteandroid.screens.remote.mappers.RemoteContentUiMapper
 import com.example.remoteandroid.screens.remote.models.RemotePayload
-import com.example.remoteandroid.screens.remote.models.RemoteScreenState
 import com.example.remoteandroid.screens.remote.models.RemoteViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +23,7 @@ class RemoteViewModel @Inject constructor(
     private val contentUiMapper: RemoteContentUiMapper,
     private val connectToDeviceUseCase: ConnectToDeviceUseCase,
     private val findDeviceUseCase: FindDeviceUseCase,
+    private val sendPairingCodeUseCase: SendPairingCodeUseCase
 ) : ViewModel() {
 
     private val viewPayload = MutableStateFlow(RemotePayload())
@@ -39,36 +38,38 @@ class RemoteViewModel @Inject constructor(
         viewModelScope.launch {
             findDeviceUseCase.invoke()
                 .collect { state ->
-                    updateViewPayload(
-                        screenState = RemoteScreenState.Searching(
-                            discoveryState = state
-                        )
-                    )
+                    updateViewPayload(discoveryState = state)
                 }
         }
     }
 
-    fun connectToDevice(selectedDevice: ConnectableDevice) {
-        updateViewPayload(screenState = RemoteScreenState.Connecting(selectedDevice = selectedDevice))
+    fun connectToDevice(selectedDevice: ConnectableDevice?) {
+        if (selectedDevice == null) return
+        updateViewPayload(selectedDevice = selectedDevice)
         viewModelScope.launch {
             connectToDeviceUseCase.invoke(selectedDevice)
                 .collect { connectionState ->
-                    updateViewPayload(
-                        screenState = RemoteScreenState.Connecting(
-                            selectedDevice = selectedDevice,
-                            connectionState = connectionState
-                        )
-                    )
+                    updateViewPayload(connectionState = connectionState)
                 }
+        }
+    }
+
+    fun enterPin(code: String) {
+        viewPayload.value.selectedDevice?.let {
+            sendPairingCodeUseCase(it, code.trim())
         }
     }
 
     private fun updateViewPayload(
-        screenState: RemoteScreenState = viewPayload.value.screenState,
+        discoveryState: DiscoveryState = viewPayload.value.discoveryState,
+        selectedDevice: ConnectableDevice? = viewPayload.value.selectedDevice,
+        connectionState: ConnectionState = viewPayload.value.connectionState,
     ) {
         viewPayload.update {
             it.copy(
-                screenState = screenState
+                selectedDevice = selectedDevice,
+                discoveryState = discoveryState,
+                connectionState = connectionState
             )
         }
         updateContent()
