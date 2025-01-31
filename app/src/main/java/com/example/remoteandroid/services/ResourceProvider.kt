@@ -8,4 +8,7 @@ class ResourceProvider(
 
     fun getString(resource: Int) : String =
         context.resources.getString(resource)
+
+    fun getString(resource: Int, vararg formatArgs: Any?) : String =
+        context.resources.getString(resource, *formatArgs)
 }

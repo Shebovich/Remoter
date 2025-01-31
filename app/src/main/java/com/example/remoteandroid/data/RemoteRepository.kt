@@ -5,6 +5,7 @@ import com.connectsdk.device.ConnectableDeviceListener
 import com.connectsdk.service.DeviceService
 import com.connectsdk.service.command.ServiceCommandError
 import com.example.remoteandroid.domain.models.ConnectionState
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
@@ -47,5 +48,14 @@ class RemoteRepository {
                 setPairingType(null)
                 connect()
             }
+
+            awaitClose {
+                connectableDevice.removeListener(deviceListener)
+                channel.close()
+            }
         }
+
+    fun enterPin(selectedDevice: ConnectableDevice, code: String) {
+        selectedDevice.sendPairingKey(code)
+    }
 }
