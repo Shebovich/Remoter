@@ -3,12 +3,14 @@ package com.example.remoteandroid.screens.remote
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.connectsdk.device.ConnectableDevice
+import com.connectsdk.service.capability.MouseControl
 import com.example.remoteandroid.domain.models.ConnectionState
 import com.example.remoteandroid.domain.models.DiscoveryState
 import com.example.remoteandroid.domain.usecase.ConnectToDeviceUseCase
 import com.example.remoteandroid.domain.usecase.FindDeviceUseCase
 import com.example.remoteandroid.domain.usecase.SendPairingCodeUseCase
 import com.example.remoteandroid.screens.remote.mappers.RemoteContentUiMapper
+import com.example.remoteandroid.screens.remote.models.MouseEvent
 import com.example.remoteandroid.screens.remote.models.RemotePayload
 import com.example.remoteandroid.screens.remote.models.RemoteViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -78,4 +80,18 @@ class RemoteViewModel @Inject constructor(
     private fun updateContent() {
         _contentViewState.value = currentContent
     }
+
+    fun handleMouseEvent(mouseEvent: MouseEvent) {
+        val state = getConnectedState() ?: return
+        val mouseControl = state.device.getCapability(MouseControl::class.java)
+        mouseControl.mouseControl
+        when(mouseEvent) {
+            MouseEvent.Click -> mouseControl.click()
+            is MouseEvent.Move -> mouseControl.move(mouseEvent.dx, mouseEvent.dy)
+            is MouseEvent.Scroll -> mouseControl.scroll(mouseEvent.dx, mouseEvent.dy)
+        }
+    }
+
+    private fun getConnectedState() : ConnectionState.Connected? =
+        viewPayload.value.connectionState as? ConnectionState.Connected
 }

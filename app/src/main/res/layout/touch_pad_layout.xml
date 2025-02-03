@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="350dp"
+    app:cardBackgroundColor="@color/black"
+    app:cardCornerRadius="32dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <ImageButton
+            android:id="@+id/mouse_left"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:rotation="90"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/mouse_up"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:rotation="180"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/mouse_right"
+            android:layout_width="40dp"
+            android:rotation="-90"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            android:layout_height="40dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/mouse_down"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/touchpad"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:cardCornerRadius="32dp"
+            app:layout_constraintBottom_toTopOf="@id/mouse_down"
+            app:layout_constraintEnd_toStartOf="@id/mouse_right"
+            app:layout_constraintStart_toEndOf="@id/mouse_left"
+            app:layout_constraintTop_toBottomOf="@id/mouse_up">
+
+            <ImageView
+                android:id="@+id/pointer"
+                android:src="@drawable/baseline_add_circle_24"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
