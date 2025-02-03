@@ -1,23 +1,21 @@
 package com.example.remoteandroid.screens.remote.mappers
 
 import com.connectsdk.device.ConnectableDevice
+import com.example.remoteandroid.R
 import com.example.remoteandroid.domain.models.ConnectionState
 import com.example.remoteandroid.domain.models.DiscoveryState
+import com.example.remoteandroid.screens.remote.models.DeviceUi
 import com.example.remoteandroid.screens.remote.models.RemotePayload
 import com.example.remoteandroid.screens.remote.models.RemoteViewState
-import com.example.remoteandroid.screens.remote.uidata.TopControlsUiData
+import com.example.remoteandroid.screens.remote.models.TestConnectDeviceUiData
+import com.example.remoteandroid.screens.remote.uidata.TestFindingDeviceUiData
 import com.example.remoteandroid.screens.remote.uidata.TouchPadUiData
-import com.example.remoteandroid.screens.remote.uidata.VolumeSettingsUiData
 import com.example.remoteandroid.services.ResourceProvider
 import com.example.remoteandroid.ui.recycler.UiData
 import com.example.remoteandroid.ui.recycler.addUiItem
+import com.example.remoteandroid.ui.recycler.addUiItems
 import com.example.remoteandroid.ui.recycler.createUiDataList
 import javax.inject.Inject
-import com.example.remoteandroid.R
-import com.example.remoteandroid.screens.remote.models.DeviceUi
-import com.example.remoteandroid.screens.remote.models.TestConnectDeviceUiData
-import com.example.remoteandroid.screens.remote.uidata.TestFindingDeviceUiData
-import com.example.remoteandroid.ui.recycler.addUiItems
 
 class RemoteContentUiMapper @Inject constructor(
     private val resourceProvider: ResourceProvider,
@@ -28,6 +26,7 @@ class RemoteContentUiMapper @Inject constructor(
             content = createUiDataList {
                 addUiItems { mapToFindDeviceUiData(payload) }
                 addUiItem { mapToConnectDeviceUiData(payload) }
+                addUiItem { TouchPadUiData() }
             }
         )
     }

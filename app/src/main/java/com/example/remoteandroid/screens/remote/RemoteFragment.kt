@@ -14,6 +14,7 @@ import com.connectsdk.discovery.DiscoveryManager
 import com.connectsdk.discovery.DiscoveryManager.PairingLevel
 import com.example.remoteandroid.R
 import com.example.remoteandroid.databinding.RemoteFragmentBinding
+import com.example.remoteandroid.screens.remote.models.MouseEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -55,13 +56,18 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
     }
 
     private val remoteAdapter by lazy {
-        RemoteAdapter(onDeviceClicked = {
-            viewModel.connectToDevice(it)
-        })
+        RemoteAdapter(
+            onDeviceClicked = {
+                viewModel.connectToDevice(it)
+            },
+            onMouseEvent = viewModel::handleMouseEvent
+        )
     }
 
     private fun setUpRecycler() = with(binding.remoteRecycler) {
-        layoutManager = LinearLayoutManager(requireContext())
+        layoutManager = object : LinearLayoutManager(requireContext()) {
+            override fun canScrollVertically() = false
+        }
         adapter = remoteAdapter
         itemAnimator = null
     }
