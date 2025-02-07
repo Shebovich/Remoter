@@ -35,23 +35,13 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initDiscoveryManager()
         setUpRecycler()
-        viewModel.onCreateView()
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.contentViewState.collect { uiState ->
                     remoteAdapter.submitData(uiState.content)
                 }
             }
-        }
-    }
-
-    private fun initDiscoveryManager() {
-        DiscoveryManager.getInstance().apply {
-            registerDefaultDeviceTypes()
-            pairingLevel = PairingLevel.ON
-            start()
         }
     }
 

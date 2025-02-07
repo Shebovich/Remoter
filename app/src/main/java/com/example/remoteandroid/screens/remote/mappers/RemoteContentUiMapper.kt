@@ -44,6 +44,8 @@ class RemoteContentUiMapper @Inject constructor(
                     device = it
                 )
             }
+
+            DiscoveryState.NetworkError -> listOf(TestFindingDeviceUiData(title = resourceProvider.getString(R.string.discovery_failed)))
         }
     }
 

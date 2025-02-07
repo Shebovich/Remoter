@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/volume_container"
+        android:layout_width="50dp"
+        android:layout_height="160dp"
+        app:cardBackgroundColor="@color/black"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintEnd_toStartOf="@id/channelListButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/volumeUpButton"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="top"
+            android:background="@color/black"
+            android:rotation="180"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:tint="@color/white" />
+
+        <ImageButton
+            android:id="@+id/volumeDownButton"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
+            android:background="@color/black"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="VOL"
+            android:textColor="@color/white" />
+
+    </androidx.cardview.widget.CardView>
+
+    <ImageButton
+        android:id="@+id/channelListButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_background"
+        android:padding="10dp"
+        app:tint="@color/white"
+        android:src="@drawable/document_header_svgrepo_com"
+        app:layout_constraintEnd_toStartOf="@id/channelListButtonSecond"
+        app:layout_constraintStart_toEndOf="@id/volume_container"
+        app:layout_constraintTop_toTopOf="@+id/volume_container" />
+
+    <ImageButton
+        android:id="@+id/channelListButtonSecond"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_background"
+        android:padding="10dp"
+        app:tint="@color/white"
+        android:src="@drawable/document_one_page_svgrepo_com"
+        app:layout_constraintEnd_toStartOf="@id/channelContainer"
+        app:layout_constraintStart_toEndOf="@id/channelListButton"
+        app:layout_constraintTop_toTopOf="@+id/channelListButton" />
+
+    <ImageButton
+        android:id="@+id/homeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_background"
+        app:tint="@color/white"
+        android:padding="10dp"
+        android:src="@drawable/home_svgrepo_com"
+        app:layout_constraintBottom_toBottomOf="@id/volume_container"
+        app:layout_constraintEnd_toStartOf="@id/muteButton"
+        app:layout_constraintStart_toEndOf="@id/volume_container" />
+
+    <ImageButton
+        android:id="@+id/muteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_background"
+        android:padding="10dp"
+        app:tint="@color/white"
+        android:src="@drawable/mute_svgrepo_com"
+        app:layout_constraintBottom_toBottomOf="@id/homeButton"
+        app:layout_constraintEnd_toStartOf="@id/channelContainer"
+        app:layout_constraintStart_toEndOf="@id/homeButton" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/channelContainer"
+        android:layout_width="50dp"
+        android:layout_height="160dp"
+        app:cardBackgroundColor="@color/black"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/channelListButtonSecond"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/channelUpButton"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="top"
+            android:background="@color/black"
+            android:rotation="180"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:tint="@color/white" />
+
+        <ImageButton
+            android:id="@+id/channelDownButton"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
+            android:background="@color/black"
+            android:src="@drawable/baseline_arrow_drop_down_24"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="CH"
+            android:textColor="@color/white" />
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

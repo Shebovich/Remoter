@@ -23,9 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RemoteViewModel @Inject constructor(
     private val contentUiMapper: RemoteContentUiMapper,
-    private val connectToDeviceUseCase: ConnectToDeviceUseCase,
-    private val findDeviceUseCase: FindDeviceUseCase,
-    private val sendPairingCodeUseCase: SendPairingCodeUseCase
+    private val sendPairingCodeUseCase: SendPairingCodeUseCase,
+    private val connectToDeviceUseCase: ConnectToDeviceUseCase
 ) : ViewModel() {
 
     private val viewPayload = MutableStateFlow(RemotePayload())
@@ -36,14 +35,6 @@ class RemoteViewModel @Inject constructor(
     private val currentContent: RemoteViewState
         get() = contentUiMapper.toContent(viewPayload.value)
 
-    fun onCreateView() {
-        viewModelScope.launch {
-            findDeviceUseCase.invoke()
-                .collect { state ->
-                    updateViewPayload(discoveryState = state)
-                }
-        }
-    }
 
     fun connectToDevice(selectedDevice: ConnectableDevice?) {
         if (selectedDevice == null) return
