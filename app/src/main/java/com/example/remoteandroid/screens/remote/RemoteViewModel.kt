@@ -16,6 +16,7 @@ import com.example.remoteandroid.screens.remote.models.RemoteViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,8 +41,9 @@ class RemoteViewModel @Inject constructor(
         if (selectedDevice == null) return
         updateViewPayload(selectedDevice = selectedDevice)
         viewModelScope.launch {
+            println("connectToDeviceUseCase")
             connectToDeviceUseCase.invoke(selectedDevice)
-                .collect { connectionState ->
+                .collectLatest { connectionState ->
                     updateViewPayload(connectionState = connectionState)
                 }
         }

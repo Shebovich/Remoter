@@ -6,15 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.navArgs
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.connectsdk.device.ConnectableDevice
-import com.connectsdk.discovery.DiscoveryManager
-import com.connectsdk.discovery.DiscoveryManager.PairingLevel
 import com.example.remoteandroid.R
 import com.example.remoteandroid.databinding.TvControlsFragmentBinding
 import com.example.remoteandroid.screens.tv.models.ButtonId
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class TvControlsFragment : Fragment(R.layout.tv_controls_fragment) {
@@ -33,19 +33,22 @@ class TvControlsFragment : Fragment(R.layout.tv_controls_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initDiscoveryManager()
         setUpRecycler()
-    }
-
-    private fun initDiscoveryManager() {
-
-        DiscoveryManager.getInstance().apply {
-            println()
+        viewModel.onViewCreated()
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.contentViewState.collect { uiState ->
+                    tvControlsAdapter.submitData(uiState.content)
+                }
+            }
         }
     }
 
-    private val remoteAdapter by lazy {
-        TvControlsAdapter(onButtonClicked = ::onButtonClicked)
+    private val tvControlsAdapter by lazy {
+        TvControlsAdapter(
+            onButtonClicked = ::onButtonClicked,
+            onMouseEvent = viewModel::onMouseEvent
+        )
     }
 
     private fun onButtonClicked(buttonId: ButtonId) {
@@ -56,7 +59,7 @@ class TvControlsFragment : Fragment(R.layout.tv_controls_fragment) {
         layoutManager = object : LinearLayoutManager(requireContext()) {
             override fun canScrollVertically() = false
         }
-        adapter = remoteAdapter
+        adapter = tvControlsAdapter
         itemAnimator = null
     }
 }

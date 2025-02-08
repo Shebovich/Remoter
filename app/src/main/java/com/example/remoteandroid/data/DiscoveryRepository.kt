@@ -7,8 +7,6 @@ import com.connectsdk.service.command.ServiceCommandError
 import com.example.remoteandroid.domain.models.DiscoveryState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 
 class DiscoveryRepository {

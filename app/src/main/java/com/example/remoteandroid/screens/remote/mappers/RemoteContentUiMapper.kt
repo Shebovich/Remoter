@@ -26,7 +26,6 @@ class RemoteContentUiMapper @Inject constructor(
             content = createUiDataList {
                 addUiItems { mapToFindDeviceUiData(payload) }
                 addUiItem { mapToConnectDeviceUiData(payload) }
-                addUiItem { TouchPadUiData() }
             }
         )
     }

@@ -9,6 +9,8 @@ import com.example.remoteandroid.R
 import com.example.remoteandroid.databinding.TouchPadLayoutBinding
 import com.example.remoteandroid.screens.remote.models.MouseEvent
 import com.example.remoteandroid.screens.remote.uidata.TouchPadUiData
+import com.example.remoteandroid.screens.tv.models.ButtonId
+import com.example.remoteandroid.screens.tv.models.onTvButtonClicked
 import com.example.remoteandroid.ui.recycler.AdapterDelegate
 import com.example.remoteandroid.ui.recycler.BaseViewHolder
 import com.example.remoteandroid.ui.recycler.UiData
@@ -18,6 +20,7 @@ import kotlin.math.pow
 
 class TouchPadAdapterDelegate(
     private val onMouseEvent: (MouseEvent) -> Unit,
+    private val onButtonClicked: (ButtonId) -> Unit
 ) : AdapterDelegate {
 
     private var lastX = Float.NaN
@@ -49,10 +52,14 @@ class TouchPadAdapterDelegate(
         @SuppressLint("ClickableViewAccessibility")
         override fun bind(data: UiData) {
             data as TouchPadUiData
-
-
-
             binding = TouchPadLayoutBinding.bind(itemView)
+            binding.mouseUp.onTvButtonClicked(ButtonId.MOUSE_TOP, onButtonClicked)
+            binding.mouseDown.onTvButtonClicked(ButtonId.MOUSE_BOTTOM, onButtonClicked)
+            binding.mouseLeft.onTvButtonClicked(ButtonId.MOUSE_LEFT, onButtonClicked)
+            binding.mouseRight.onTvButtonClicked(ButtonId.MOUSE_RIGHT, onButtonClicked)
+            binding.backButton.onTvButtonClicked(ButtonId.BACK, onButtonClicked)
+
+
             binding.touchpad.setOnTouchListener { _, motionEvent ->
 
                 isScroll = isScroll || motionEvent.pointerCount > 1

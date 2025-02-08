@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.connectsdk.discovery.DiscoveryManager
 import com.connectsdk.discovery.DiscoveryManager.PairingLevel
@@ -36,6 +37,10 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpRecycler()
+        binding.tvScreenButton.setOnClickListener {
+            val action = RemoteFragmentDirections.actionRemoteFragmentToTvControlsFragment()
+            findNavController().navigate(action)
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.contentViewState.collect { uiState ->
@@ -50,7 +55,6 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
             onDeviceClicked = {
                 viewModel.connectToDevice(it)
             },
-            onMouseEvent = viewModel::handleMouseEvent
         )
     }
 

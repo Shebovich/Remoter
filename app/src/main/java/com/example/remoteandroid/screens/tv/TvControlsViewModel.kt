@@ -1,27 +1,34 @@
 package com.example.remoteandroid.screens.tv
 
 import androidx.lifecycle.ViewModel
-import com.connectsdk.service.capability.ExternalInputControl
+import androidx.lifecycle.viewModelScope
+import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.service.capability.KeyControl
 import com.connectsdk.service.capability.Launcher
+import com.connectsdk.service.capability.MouseControl
 import com.connectsdk.service.capability.PowerControl
 import com.connectsdk.service.capability.TVControl
-import com.connectsdk.service.capability.ToastControl
 import com.connectsdk.service.capability.VolumeControl
-import com.example.remoteandroid.screens.remote.models.RemotePayload
-import com.example.remoteandroid.screens.remote.models.RemoteViewState
+import com.example.remoteandroid.domain.models.ConnectionState
+import com.example.remoteandroid.domain.usecase.GetConnectedDeviceUseCase
+import com.example.remoteandroid.domain.usecase.SubscribeConnectionStateUseCase
+import com.example.remoteandroid.screens.remote.models.MouseEvent
+import com.example.remoteandroid.screens.tv.mappers.TvControlsContentUiMapper
 import com.example.remoteandroid.screens.tv.models.ButtonId
 import com.example.remoteandroid.screens.tv.models.TvControlsPayload
 import com.example.remoteandroid.screens.tv.models.TvControlsViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TvControlsViewModel @Inject constructor(
-
+    private val contentUiMapper: TvControlsContentUiMapper,
+    private val subscribeConnectionStateUseCase: SubscribeConnectionStateUseCase
 ) : ViewModel() {
 
     private val viewPayload = MutableStateFlow(TvControlsPayload())
@@ -34,37 +41,77 @@ class TvControlsViewModel @Inject constructor(
 
     private fun muteClicked() {
         val muteSet = !viewPayload.value.isMuted
-        viewPayload.value.connectedDevice?.getCapability(VolumeControl::class.java)
-            ?.setMute(muteSet, null)
+        viewPayload.value.volumeControl?.setMute(muteSet, null)
         viewPayload.update { it.copy(isMuted = muteSet) }
     }
 
-    fun onButtonClicked(buttonId: ButtonId) {
-        when (buttonId) {
-            ButtonId.OFF -> viewPayload.value.connectedDevice?.getCapability(PowerControl::class.java)
-                ?.powerOff(null)
-
-            ButtonId.BROWSER -> viewPayload.value.connectedDevice?.getCapability(Launcher::class.java)
-                ?.launchBrowser("http://google.com/", null)
-
-            ButtonId.SEARCH -> Unit
-            ButtonId.EXIT -> Unit
-            ButtonId.CHANNEL_UP -> viewPayload.value.connectedDevice?.getCapability(TVControl::class.java)?.channelUp(null)
-            ButtonId.CHANNEL_DOWN -> viewPayload.value.connectedDevice?.getCapability(TVControl::class.java)?.channelDown(null)
-            ButtonId.CHANNEL_ONE -> Unit
-            ButtonId.LIST_CHANNELS -> Unit
-            ButtonId.VOLUME_UP -> viewPayload.value.connectedDevice?.getCapability(VolumeControl::class.java)
-                ?.volumeUp(null)
-
-            ButtonId.VOLUME_DOWN -> viewPayload.value.connectedDevice?.getCapability(VolumeControl::class.java)
-                ?.volumeDown(null)
-
-            ButtonId.HOME -> viewPayload.value.connectedDevice?.getCapability(KeyControl::class.java)
-                ?.home(null)
-
-            ButtonId.MUTE -> muteClicked()
+    fun onViewCreated() {
+        println("onViewCreated")
+        _contentViewState.value = currentContent
+        viewModelScope.launch {
+            subscribeConnectionStateUseCase.invoke()
+                .collectLatest { connectionState ->
+                    println("getConnectedDeviceUseCase = $connectionState")
+                    if (connectionState is ConnectionState.Connected) {
+                        onDeviceConnected(connectionState.device)
+                    } else {
+                        viewPayload.update { it.copy(connectedDevice = null) }
+                    }
+                }
         }
     }
 
+    fun onButtonClicked(buttonId: ButtonId) {
+        println("onButtonClicked : $buttonId")
+        when (buttonId) {
+            ButtonId.OFF -> viewPayload.value.powerControl?.powerOff(null)
+            ButtonId.BROWSER -> viewPayload.value.launcher?.launchBrowser(
+                "http://google.com/",
+                null
+            )
 
+            ButtonId.SEARCH -> Unit
+            ButtonId.EXIT -> Unit
+            ButtonId.CHANNEL_UP -> viewPayload.value.tvControl?.channelUp(null)
+            ButtonId.CHANNEL_DOWN -> viewPayload.value.tvControl?.channelDown(null)
+            ButtonId.CHANNEL_ONE -> Unit
+            ButtonId.LIST_CHANNELS -> Unit
+            ButtonId.VOLUME_UP -> viewPayload.value.volumeControl?.volumeUp(null)
+            ButtonId.VOLUME_DOWN -> viewPayload.value.volumeControl?.volumeDown(null)
+            ButtonId.HOME -> viewPayload.value.keyControl?.home(null)
+            ButtonId.MUTE -> muteClicked()
+            ButtonId.MOUSE_LEFT -> viewPayload.value.keyControl?.left(null)
+            ButtonId.MOUSE_RIGHT -> viewPayload.value.keyControl?.right(null)
+            ButtonId.MOUSE_TOP -> viewPayload.value.keyControl?.up(null)
+            ButtonId.MOUSE_BOTTOM -> viewPayload.value.keyControl?.down(null)
+            ButtonId.BACK -> viewPayload.value.keyControl?.back(null)
+        }
+    }
+
+    private fun onDeviceConnected(connectableDevice: ConnectableDevice) {
+        println("onDeviceConnected : $connectableDevice")
+        viewPayload.update {
+            it.copy(
+                connectedDevice = connectableDevice,
+                powerControl = connectableDevice.getCapability(PowerControl::class.java),
+                volumeControl = connectableDevice.getCapability(VolumeControl::class.java),
+                tvControl = connectableDevice.getCapability(TVControl::class.java),
+                launcher = connectableDevice.getCapability(Launcher::class.java),
+                keyControl = connectableDevice.getCapability(KeyControl::class.java),
+                mouseControl = connectableDevice.getCapability(MouseControl::class.java)
+            )
+        }
+    }
+
+    fun onMouseEvent(mouseEvent: MouseEvent) {
+        println("mouseEvent : $mouseEvent")
+        when (mouseEvent) {
+            MouseEvent.Click -> viewPayload.value.mouseControl?.click()
+            is MouseEvent.Move -> viewPayload.value.mouseControl?.move(mouseEvent.dx, mouseEvent.dy)
+            is MouseEvent.Scroll -> viewPayload.value.mouseControl?.scroll(
+                mouseEvent.dx,
+                mouseEvent.dy
+            )
+        }
+    }
 }

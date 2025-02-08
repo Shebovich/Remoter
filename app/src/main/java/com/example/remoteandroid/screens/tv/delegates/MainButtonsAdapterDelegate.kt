@@ -23,7 +23,6 @@ class MainButtonsAdapterDelegate(
 
         private lateinit var binding: MainTvButtonsLayoutBinding
         override fun bind(data: UiData) {
-            data as TestConnectDeviceUiData
             binding = MainTvButtonsLayoutBinding.bind(itemView)
             binding.powerButton.onTvButtonClicked(ButtonId.OFF, onButtonClicked)
             binding.searchButton.onTvButtonClicked(ButtonId.SEARCH, onButtonClicked)
