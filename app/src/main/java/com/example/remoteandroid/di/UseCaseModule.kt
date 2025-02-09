@@ -23,6 +23,6 @@ object UseCaseModule {
         FindDeviceUseCase(repository)
 
     @Provides
-    fun provideSendPairingCodeUseCase(repository: RemoteRepository) : SendPairingCodeUseCase =
+    fun provideSendPairingCodeUseCase(repository: RemoteRepository): SendPairingCodeUseCase =
         SendPairingCodeUseCase(repository)
 }

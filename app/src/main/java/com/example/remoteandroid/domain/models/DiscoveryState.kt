@@ -10,4 +10,6 @@ sealed class DiscoveryState {
     data class Updated(val devices: List<ConnectableDevice>) : DiscoveryState()
 
     data object Searching : DiscoveryState()
+
+    data object NetworkError: DiscoveryState()
 }

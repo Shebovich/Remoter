@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.service.capability.MouseControl
+import com.example.remoteandroid.data.RemoteRepository
 import com.example.remoteandroid.domain.models.ConnectionState
 import com.example.remoteandroid.domain.models.DiscoveryState
 import com.example.remoteandroid.domain.usecase.ConnectToDeviceUseCase
@@ -16,6 +17,7 @@ import com.example.remoteandroid.screens.remote.models.RemoteViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,9 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RemoteViewModel @Inject constructor(
     private val contentUiMapper: RemoteContentUiMapper,
+    private val sendPairingCodeUseCase: SendPairingCodeUseCase,
     private val connectToDeviceUseCase: ConnectToDeviceUseCase,
-    private val findDeviceUseCase: FindDeviceUseCase,
-    private val sendPairingCodeUseCase: SendPairingCodeUseCase
 ) : ViewModel() {
 
     private val viewPayload = MutableStateFlow(RemotePayload())
@@ -36,25 +37,6 @@ class RemoteViewModel @Inject constructor(
     private val currentContent: RemoteViewState
         get() = contentUiMapper.toContent(viewPayload.value)
 
-    fun onCreateView() {
-        viewModelScope.launch {
-            findDeviceUseCase.invoke()
-                .collect { state ->
-                    updateViewPayload(discoveryState = state)
-                }
-        }
-    }
-
-    fun connectToDevice(selectedDevice: ConnectableDevice?) {
-        if (selectedDevice == null) return
-        updateViewPayload(selectedDevice = selectedDevice)
-        viewModelScope.launch {
-            connectToDeviceUseCase.invoke(selectedDevice)
-                .collect { connectionState ->
-                    updateViewPayload(connectionState = connectionState)
-                }
-        }
-    }
 
     fun enterPin(code: String) {
         viewPayload.value.selectedDevice?.let {
@@ -81,17 +63,19 @@ class RemoteViewModel @Inject constructor(
         _contentViewState.value = currentContent
     }
 
-    fun handleMouseEvent(mouseEvent: MouseEvent) {
-        val state = getConnectedState() ?: return
-        val mouseControl = state.device.getCapability(MouseControl::class.java)
-        mouseControl.mouseControl
-        when(mouseEvent) {
-            MouseEvent.Click -> mouseControl.click()
-            is MouseEvent.Move -> mouseControl.move(mouseEvent.dx, mouseEvent.dy)
-            is MouseEvent.Scroll -> mouseControl.scroll(mouseEvent.dx, mouseEvent.dy)
-        }
+    fun onConnectionStateChanged(connectionState: ConnectionState) {
+        println("remoteViewModel $connectionState")
+        updateViewPayload(connectionState = connectionState)
     }
 
-    private fun getConnectedState() : ConnectionState.Connected? =
-        viewPayload.value.connectionState as? ConnectionState.Connected
+    fun connectToDevice(selectedDevice: ConnectableDevice?) {
+        if (selectedDevice == null) return
+        updateViewPayload(selectedDevice = selectedDevice)
+        viewModelScope.launch {
+            connectToDeviceUseCase.invoke(selectedDevice)
+                .collect { connectionState ->
+                    updateViewPayload(connectionState = connectionState)
+                }
+        }
+    }
 }

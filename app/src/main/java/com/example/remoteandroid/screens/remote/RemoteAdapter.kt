@@ -9,9 +9,7 @@ import com.example.remoteandroid.ui.recycler.RecyclerAdapterDelegated
 
 class RemoteAdapter(
     onDeviceClicked: (ConnectableDevice?) -> Unit,
-    onMouseEvent: (MouseEvent) -> Unit
 ) : RecyclerAdapterDelegated(
     TestFindDeviceDelegate(onDeviceClicked),
     TestConnectDeviceDelegate(),
-    TouchPadAdapterDelegate(onMouseEvent)
 )
