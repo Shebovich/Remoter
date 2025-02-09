@@ -14,4 +14,6 @@ sealed class ConnectionState() {
     data class PairingRequired(val type: PairingType) : ConnectionState()
 
     data object Waiting : ConnectionState()
+
+    data object NetworkError : ConnectionState()
 }

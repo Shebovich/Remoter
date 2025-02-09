@@ -1,17 +1,12 @@
 package com.example.remoteandroid.screens.main
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -27,7 +22,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private val viewModel: MainViewModel by viewModels()
-
     private val networkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -38,14 +32,12 @@ class MainActivity : AppCompatActivity() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
             viewModel.onNetworkAvailable()
-            println("onNetworkAvailable")
         }
 
         // lost network connection
         override fun onLost(network: Network) {
             super.onLost(network)
             viewModel.onNetworkLost()
-            println("onNetworkLost")
         }
     }
 
@@ -53,6 +45,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initDiscoveryObserve()
+        initNetworkObserver()
+    }
+
+    private fun initNetworkObserver() {
+        val connectivityManager = getSystemService(ConnectivityManager::class.java) as ConnectivityManager
+        connectivityManager.requestNetwork(networkRequest, networkCallback)
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
     private fun initDiscoveryObserve() {
@@ -67,9 +66,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val connectivityManager = getSystemService(ConnectivityManager::class.java) as ConnectivityManager
-        connectivityManager.requestNetwork(networkRequest, networkCallback)
         initDiscoveryManager()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        DiscoveryManager.getInstance().apply {
+            stop()
+        }
+        val connectivityManager = getSystemService(ConnectivityManager::class.java) as ConnectivityManager
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 
     private fun initDiscoveryManager() {
@@ -79,4 +85,5 @@ class MainActivity : AppCompatActivity() {
             start()
         }
     }
+
 }

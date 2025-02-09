@@ -9,18 +9,18 @@ import com.connectsdk.service.capability.MouseControl
 import com.connectsdk.service.capability.PowerControl
 import com.connectsdk.service.capability.TVControl
 import com.connectsdk.service.capability.VolumeControl
+import com.example.remoteandroid.data.RemoteRepository
 import com.example.remoteandroid.domain.models.ConnectionState
-import com.example.remoteandroid.domain.usecase.GetConnectedDeviceUseCase
-import com.example.remoteandroid.domain.usecase.SubscribeConnectionStateUseCase
 import com.example.remoteandroid.screens.remote.models.MouseEvent
 import com.example.remoteandroid.screens.tv.mappers.TvControlsContentUiMapper
 import com.example.remoteandroid.screens.tv.models.ButtonId
 import com.example.remoteandroid.screens.tv.models.TvControlsPayload
 import com.example.remoteandroid.screens.tv.models.TvControlsViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TvControlsViewModel @Inject constructor(
     private val contentUiMapper: TvControlsContentUiMapper,
-    private val subscribeConnectionStateUseCase: SubscribeConnectionStateUseCase
+    private val remoteRepository: RemoteRepository
 ) : ViewModel() {
 
     private val viewPayload = MutableStateFlow(TvControlsPayload())
@@ -48,16 +48,14 @@ class TvControlsViewModel @Inject constructor(
     fun onViewCreated() {
         println("onViewCreated")
         _contentViewState.value = currentContent
-        viewModelScope.launch {
-            subscribeConnectionStateUseCase.invoke()
-                .collectLatest { connectionState ->
-                    println("getConnectedDeviceUseCase = $connectionState")
-                    if (connectionState is ConnectionState.Connected) {
-                        onDeviceConnected(connectionState.device)
-                    } else {
-                        viewPayload.update { it.copy(connectedDevice = null) }
-                    }
-                }
+    }
+
+    fun onConnectionStateChanged(connectionState: ConnectionState) {
+        println("onConnectionStateChanged $connectionState")
+        if (connectionState is ConnectionState.Connected) {
+            onDeviceConnected(connectionState.device)
+        } else {
+            viewPayload.update { it.copy(connectedDevice = null) }
         }
     }
 
@@ -71,7 +69,7 @@ class TvControlsViewModel @Inject constructor(
             )
 
             ButtonId.SEARCH -> Unit
-            ButtonId.EXIT -> Unit
+            ButtonId.EXIT -> viewPayload.value.keyControl?.home(null)
             ButtonId.CHANNEL_UP -> viewPayload.value.tvControl?.channelUp(null)
             ButtonId.CHANNEL_DOWN -> viewPayload.value.tvControl?.channelDown(null)
             ButtonId.CHANNEL_ONE -> Unit

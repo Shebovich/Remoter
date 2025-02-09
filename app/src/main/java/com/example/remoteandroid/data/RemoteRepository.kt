@@ -19,17 +19,16 @@ import kotlinx.coroutines.flow.first
 
 class RemoteRepository {
 
-    private val _connectionState: MutableSharedFlow<ConnectionState> = MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val connectionState = _connectionState.asSharedFlow()
-
-    suspend fun connectToDevice(connectableDevice: ConnectableDevice) {
+    fun connectToDevice(connectableDevice: ConnectableDevice): Flow<ConnectionState> =
+        callbackFlow {
+            trySend(ConnectionState.Waiting)
             val deviceListener = object : ConnectableDeviceListener {
                 override fun onDeviceReady(device: ConnectableDevice?) {
-                    _connectionState.tryEmit(ConnectionState.Connected(connectableDevice))
+                    trySend(ConnectionState.Connected(connectableDevice))
                 }
 
                 override fun onDeviceDisconnected(device: ConnectableDevice?) {
-                    _connectionState.tryEmit(ConnectionState.Disconnected)
+                    trySend(ConnectionState.Disconnected)
                 }
 
                 override fun onPairingRequired(
@@ -37,16 +36,14 @@ class RemoteRepository {
                     service: DeviceService?,
                     pairingType: DeviceService.PairingType?,
                 ) {
-                    pairingType?.let {
-                        _connectionState.tryEmit(ConnectionState.PairingRequired(it))
-                    }
+                    pairingType?.let { trySend(ConnectionState.PairingRequired(it)) }
                 }
 
                 override fun onConnectionFailed(
                     device: ConnectableDevice?,
                     error: ServiceCommandError?,
                 ) {
-                    _connectionState.tryEmit(ConnectionState.Disconnected)
+                    trySend(ConnectionState.Disconnected)
                 }
 
                 override fun onCapabilityUpdated(
@@ -60,7 +57,13 @@ class RemoteRepository {
                 setPairingType(null)
                 connect()
             }
+
+            awaitClose {
+                connectableDevice.removeListener(deviceListener)
+                channel.close()
+            }
         }
+
 
     fun enterPin(selectedDevice: ConnectableDevice, code: String) {
         selectedDevice.sendPairingKey(code)

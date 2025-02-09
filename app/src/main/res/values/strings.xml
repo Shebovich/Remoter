@@ -7,5 +7,6 @@
     <string name="connection_waiting">Waiting connection\n</string>
     <string name="discovery_searching">Searching TV\'s</string>
     <string name="discovery_failed">No TV\'s found</string>
+    <string name="discovery_network_error">No WiFi connection</string>
     <string name="discovery_updated">"Founded TV's: %1$s"</string>
 </resources>

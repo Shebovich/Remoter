@@ -44,7 +44,7 @@ class RemoteContentUiMapper @Inject constructor(
                 )
             }
 
-            DiscoveryState.NetworkError -> listOf(TestFindingDeviceUiData(title = resourceProvider.getString(R.string.discovery_failed)))
+            DiscoveryState.NetworkError -> listOf(TestFindingDeviceUiData(title = resourceProvider.getString(R.string.discovery_network_error)))
         }
     }
 
@@ -59,6 +59,7 @@ class RemoteContentUiMapper @Inject constructor(
             ConnectionState.Failed -> resourceProvider.getString(R.string.connection_failed)
             is ConnectionState.PairingRequired -> resourceProvider.getString(R.string.connection_pairing_required)
             ConnectionState.Waiting -> resourceProvider.getString(R.string.connection_waiting)
+            ConnectionState.NetworkError -> resourceProvider.getString(R.string.discovery_network_error)
         }
 
         return TestConnectDeviceUiData(
@@ -71,10 +72,4 @@ class RemoteContentUiMapper @Inject constructor(
 
     private fun getConnectedDeviceTitle(devices: List<ConnectableDevice>): String =
         devices.map { DeviceUi(it.friendlyName, it.modelName) }.joinToString(separator = "\n")
-
-    companion object {
-        private const val TOP_CONTROLS_ID = "TOP_CONTROLS_ID"
-        private const val VOLUME_SETTINGS_ID = "VOLUME_SETTINGS_ID"
-        private const val TOUCH_PAD_ID = "TOUCH_PAD_ID"
-    }
 }
