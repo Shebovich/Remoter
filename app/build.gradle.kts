@@ -51,6 +51,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":Connect-SDK-Android"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -69,9 +70,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    //third-party
-    implementation(libs.connect)
 }
 
 kapt {

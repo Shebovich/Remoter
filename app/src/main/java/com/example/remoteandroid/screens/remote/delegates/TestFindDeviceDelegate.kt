@@ -11,7 +11,7 @@ import com.example.remoteandroid.ui.recycler.BaseViewHolder
 import com.example.remoteandroid.ui.recycler.UiData
 
 class TestFindDeviceDelegate(
-    private val onDeviceClicked: (ConnectableDevice?) -> Unit
+    private val onSearchingTVsClicked: () -> Unit
 ) : AdapterDelegate {
     override fun onCreateViewHolder(parent: ViewGroup): BaseViewHolder = ViewHolder(parent)
 
@@ -28,7 +28,7 @@ class TestFindDeviceDelegate(
             data as TestFindingDeviceUiData
             binding = TestFindingDeviceLayoutBinding.bind(itemView)
             binding.testText.text = data.title
-            itemView.setOnClickListener { onDeviceClicked.invoke(data.device) }
+            itemView.setOnClickListener { onSearchingTVsClicked.invoke() }
         }
 
     }

@@ -1,6 +1,7 @@
 package com.example.remoteandroid.screens.remote.delegates
 
 import android.view.ViewGroup
+import com.connectsdk.device.ConnectableDevice
 import com.example.remoteandroid.R
 import com.example.remoteandroid.databinding.TestConnectingDeviceLayoutBinding
 import com.example.remoteandroid.screens.remote.models.TestConnectDeviceUiData
@@ -8,7 +9,9 @@ import com.example.remoteandroid.ui.recycler.AdapterDelegate
 import com.example.remoteandroid.ui.recycler.BaseViewHolder
 import com.example.remoteandroid.ui.recycler.UiData
 
-class TestConnectDeviceDelegate : AdapterDelegate {
+class TestConnectDeviceDelegate(
+    private val onDeviceClicked : (ConnectableDevice?) -> Unit
+) : AdapterDelegate {
     override fun onCreateViewHolder(parent: ViewGroup): BaseViewHolder = ViewHolder(parent)
 
     override fun isValidForType(data: UiData): Boolean = data is TestConnectDeviceUiData
@@ -21,6 +24,7 @@ class TestConnectDeviceDelegate : AdapterDelegate {
             data as TestConnectDeviceUiData
             binding = TestConnectingDeviceLayoutBinding.bind(itemView)
             binding.testText.text = data.title
+            itemView.setOnClickListener { onDeviceClicked.invoke(data.device) }
         }
     }
 }
