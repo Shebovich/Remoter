@@ -9,7 +9,6 @@ import com.example.remoteandroid.screens.remote.models.RemotePayload
 import com.example.remoteandroid.screens.remote.models.RemoteViewState
 import com.example.remoteandroid.screens.remote.models.TestConnectDeviceUiData
 import com.example.remoteandroid.screens.remote.uidata.TestFindingDeviceUiData
-import com.example.remoteandroid.screens.remote.uidata.TouchPadUiData
 import com.example.remoteandroid.services.ResourceProvider
 import com.example.remoteandroid.ui.recycler.UiData
 import com.example.remoteandroid.ui.recycler.addUiItem
@@ -63,8 +62,17 @@ class RemoteContentUiMapper @Inject constructor(
         }
 
         return TestConnectDeviceUiData(
-            title = resource
+            title = resource,
+            device = getFirstConnectableDevice(payload.discoveryState)
         )
+    }
+
+    private fun getFirstConnectableDevice(discoveryState: DiscoveryState): ConnectableDevice? {
+        return if (discoveryState is DiscoveryState.Updated) {
+            discoveryState.devices.first()
+        } else {
+            null
+        }
     }
 
     private fun getConnectedDeviceTitle(device: ConnectableDevice): String =

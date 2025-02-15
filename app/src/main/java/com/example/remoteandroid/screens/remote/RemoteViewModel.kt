@@ -1,25 +1,18 @@
 package com.example.remoteandroid.screens.remote
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.connectsdk.device.ConnectableDevice
-import com.connectsdk.service.capability.MouseControl
-import com.example.remoteandroid.data.RemoteRepository
 import com.example.remoteandroid.domain.models.ConnectionState
 import com.example.remoteandroid.domain.models.DiscoveryState
 import com.example.remoteandroid.domain.usecase.ConnectToDeviceUseCase
-import com.example.remoteandroid.domain.usecase.FindDeviceUseCase
 import com.example.remoteandroid.domain.usecase.SendPairingCodeUseCase
 import com.example.remoteandroid.screens.remote.mappers.RemoteContentUiMapper
-import com.example.remoteandroid.screens.remote.models.MouseEvent
 import com.example.remoteandroid.screens.remote.models.RemotePayload
 import com.example.remoteandroid.screens.remote.models.RemoteViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -68,14 +61,7 @@ class RemoteViewModel @Inject constructor(
         updateViewPayload(connectionState = connectionState)
     }
 
-    fun connectToDevice(selectedDevice: ConnectableDevice?) {
-        if (selectedDevice == null) return
-        updateViewPayload(selectedDevice = selectedDevice)
-        viewModelScope.launch {
-            connectToDeviceUseCase.invoke(selectedDevice)
-                .collect { connectionState ->
-                    updateViewPayload(connectionState = connectionState)
-                }
-        }
+    fun onDiscoveryStateChanged(discoveryState: DiscoveryState) {
+        updateViewPayload(discoveryState = discoveryState)
     }
 }

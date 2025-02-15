@@ -8,19 +8,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.connectsdk.device.ConnectableDevice
-import com.connectsdk.discovery.DiscoveryManager
-import com.connectsdk.discovery.DiscoveryManager.PairingLevel
 import com.example.remoteandroid.R
 import com.example.remoteandroid.databinding.RemoteFragmentBinding
 import com.example.remoteandroid.screens.main.MainViewModel
-import com.example.remoteandroid.screens.remote.models.MouseEvent
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -47,17 +43,24 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
             val action = RemoteFragmentDirections.actionRemoteFragmentToTvControlsFragment()
             findNavController().navigate(action)
         }
-        viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.contentViewState.collect { uiState ->
                     remoteAdapter.submitData(uiState.content)
                 }
             }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mainViewModel.connectionState.collectLatest { connectionState ->
                     viewModel.onConnectionStateChanged(connectionState)
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.discoveryState.collectLatest { discoveryState ->
+                    viewModel.onDiscoveryStateChanged(discoveryState)
                 }
             }
         }
@@ -67,8 +70,11 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
         RemoteAdapter(
             onDeviceClicked = {
                 println("onDeviceClicked")
-                viewModel.connectToDevice(it)
+                mainViewModel.connectToDevice(it)
             },
+            onSearchingTvClicked = {
+                mainViewModel.onStart()
+            }
         )
     }
 

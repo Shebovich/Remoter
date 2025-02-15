@@ -9,7 +9,8 @@ import com.example.remoteandroid.ui.recycler.RecyclerAdapterDelegated
 
 class RemoteAdapter(
     onDeviceClicked: (ConnectableDevice?) -> Unit,
+    onSearchingTvClicked: () -> Unit
 ) : RecyclerAdapterDelegated(
-    TestFindDeviceDelegate(onDeviceClicked),
-    TestConnectDeviceDelegate(),
+    TestFindDeviceDelegate(onSearchingTvClicked),
+    TestConnectDeviceDelegate(onDeviceClicked),
 )

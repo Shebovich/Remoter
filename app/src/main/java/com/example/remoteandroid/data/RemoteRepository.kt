@@ -5,6 +5,7 @@ import com.connectsdk.device.ConnectableDeviceListener
 import com.connectsdk.service.DeviceService
 import com.connectsdk.service.command.ServiceCommandError
 import com.example.remoteandroid.domain.models.ConnectionState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -16,12 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 
 class RemoteRepository {
 
     fun connectToDevice(connectableDevice: ConnectableDevice): Flow<ConnectionState> =
         callbackFlow {
-            trySend(ConnectionState.Waiting)
             val deviceListener = object : ConnectableDeviceListener {
                 override fun onDeviceReady(device: ConnectableDevice?) {
                     trySend(ConnectionState.Connected(connectableDevice))
@@ -62,7 +63,7 @@ class RemoteRepository {
                 connectableDevice.removeListener(deviceListener)
                 channel.close()
             }
-        }
+        }.flowOn(Dispatchers.Main)
 
 
     fun enterPin(selectedDevice: ConnectableDevice, code: String) {
