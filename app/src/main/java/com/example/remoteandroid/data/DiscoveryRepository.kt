@@ -3,6 +3,7 @@ package com.example.remoteandroid.data
 import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.discovery.DiscoveryManager
 import com.connectsdk.discovery.DiscoveryManagerListener
+import com.connectsdk.service.capability.TVControl
 import com.connectsdk.service.command.ServiceCommandError
 import com.example.remoteandroid.domain.models.DiscoveryState
 import kotlinx.coroutines.Dispatchers
@@ -19,9 +20,29 @@ class DiscoveryRepository {
         val listener = object : DiscoveryManagerListener {
             override fun onDeviceAdded(manager: DiscoveryManager?, device: ConnectableDevice?) {
                 device?.let { deviceNonNull ->
+                    println("deviceAdded: $device")
                     val foundedDevice = devices.find { deviceNonNull.ipAddress == it.ipAddress }
                     if (foundedDevice == null) {
                         devices.add(deviceNonNull)
+                        trySend(DiscoveryState.Updated(devices))
+                    } else {
+                        var resultDevice = foundedDevice
+                        if (foundedDevice.services.isEmpty()) resultDevice = deviceNonNull
+                        if (deviceNonNull.services.isEmpty()) resultDevice = foundedDevice
+                        foundedDevice.services.forEach { foundedDeviceService ->
+                            deviceNonNull.services.forEach { deviceNonNullService ->
+                                resultDevice = if (foundedDeviceService.getPriorityLevel(TVControl::class.java) > deviceNonNullService.getPriorityLevel(
+                                        TVControl::class.java
+                                    )
+                                ) {
+                                    foundedDevice
+                                } else {
+                                    deviceNonNull
+                                }
+                            }
+                        }
+                        devices.remove(foundedDevice)
+                        devices.add(resultDevice!!)
                         trySend(DiscoveryState.Updated(devices))
                     }
                 }
@@ -59,6 +80,8 @@ class DiscoveryRepository {
         }
         DiscoveryManager.getInstance().apply {
             addListener(listener)
+            setServiceIntegration(true)
+            start()
         }
         awaitClose {
             println("Closed")

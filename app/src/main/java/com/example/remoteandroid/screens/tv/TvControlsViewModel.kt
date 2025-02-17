@@ -28,7 +28,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TvControlsViewModel @Inject constructor(
     private val contentUiMapper: TvControlsContentUiMapper,
-    private val remoteRepository: RemoteRepository
 ) : ViewModel() {
 
     private val viewPayload = MutableStateFlow(TvControlsPayload())
@@ -40,8 +39,9 @@ class TvControlsViewModel @Inject constructor(
         get() = contentUiMapper.toContent(viewPayload.value)
 
     private fun muteClicked() {
+        val connectedState = getConnectedState(viewPayload.value.connectionState) ?: return
         val muteSet = !viewPayload.value.isMuted
-        viewPayload.value.volumeControl?.setMute(muteSet, null)
+        connectedState.volumeControl?.setMute(muteSet, null)
         viewPayload.update { it.copy(isMuted = muteSet) }
     }
 
@@ -52,64 +52,55 @@ class TvControlsViewModel @Inject constructor(
 
     fun onConnectionStateChanged(connectionState: ConnectionState) {
         println("onConnectionStateChanged $connectionState")
-        if (connectionState is ConnectionState.Connected) {
-            onDeviceConnected(connectionState.device)
-        } else {
-            viewPayload.update { it.copy(connectedDevice = null) }
+        viewPayload.update {
+            it.copy(
+                connectionState = connectionState
+            )
         }
     }
 
     fun onButtonClicked(buttonId: ButtonId) {
         println("onButtonClicked : $buttonId")
+        val connectedState = getConnectedState(viewPayload.value.connectionState) ?: return
         when (buttonId) {
-            ButtonId.OFF -> viewPayload.value.powerControl?.powerOff(null)
-            ButtonId.BROWSER -> viewPayload.value.launcher?.launchBrowser(
+            ButtonId.OFF -> connectedState.powerControl?.powerOff(null)
+            ButtonId.BROWSER -> connectedState.launcher?.launchBrowser(
                 "http://google.com/",
                 null
             )
 
             ButtonId.SEARCH -> Unit
-            ButtonId.EXIT -> viewPayload.value.keyControl?.home(null)
-            ButtonId.CHANNEL_UP -> viewPayload.value.tvControl?.channelUp(null)
-            ButtonId.CHANNEL_DOWN -> viewPayload.value.tvControl?.channelDown(null)
+            ButtonId.EXIT -> connectedState.keyControl?.home(null)
+            ButtonId.CHANNEL_UP -> connectedState.tvControl?.channelUp(null)
+            ButtonId.CHANNEL_DOWN -> connectedState.tvControl?.channelDown(null)
             ButtonId.CHANNEL_ONE -> Unit
             ButtonId.LIST_CHANNELS -> Unit
-            ButtonId.VOLUME_UP -> viewPayload.value.volumeControl?.volumeUp(null)
-            ButtonId.VOLUME_DOWN -> viewPayload.value.volumeControl?.volumeDown(null)
-            ButtonId.HOME -> viewPayload.value.keyControl?.home(null)
+            ButtonId.VOLUME_UP -> connectedState.volumeControl?.volumeUp(null)
+            ButtonId.VOLUME_DOWN -> connectedState.volumeControl?.volumeDown(null)
+            ButtonId.HOME -> connectedState.keyControl?.home(null)
             ButtonId.MUTE -> muteClicked()
-            ButtonId.MOUSE_LEFT -> viewPayload.value.keyControl?.left(null)
-            ButtonId.MOUSE_RIGHT -> viewPayload.value.keyControl?.right(null)
-            ButtonId.MOUSE_TOP -> viewPayload.value.keyControl?.up(null)
-            ButtonId.MOUSE_BOTTOM -> viewPayload.value.keyControl?.down(null)
-            ButtonId.BACK -> viewPayload.value.keyControl?.back(null)
-        }
-    }
-
-    private fun onDeviceConnected(connectableDevice: ConnectableDevice) {
-        println("onDeviceConnected : $connectableDevice")
-        viewPayload.update {
-            it.copy(
-                connectedDevice = connectableDevice,
-                powerControl = connectableDevice.getCapability(PowerControl::class.java),
-                volumeControl = connectableDevice.getCapability(VolumeControl::class.java),
-                tvControl = connectableDevice.getCapability(TVControl::class.java),
-                launcher = connectableDevice.getCapability(Launcher::class.java),
-                keyControl = connectableDevice.getCapability(KeyControl::class.java),
-                mouseControl = connectableDevice.getCapability(MouseControl::class.java)
-            )
+            ButtonId.MOUSE_LEFT -> connectedState.keyControl?.left(null)
+            ButtonId.MOUSE_RIGHT -> connectedState.keyControl?.right(null)
+            ButtonId.MOUSE_TOP -> connectedState.keyControl?.up(null)
+            ButtonId.MOUSE_BOTTOM -> connectedState.keyControl?.down(null)
+            ButtonId.BACK -> connectedState.keyControl?.back(null)
         }
     }
 
     fun onMouseEvent(mouseEvent: MouseEvent) {
         println("mouseEvent : $mouseEvent")
+        val connectedState = getConnectedState(viewPayload.value.connectionState) ?: return
         when (mouseEvent) {
-            MouseEvent.Click -> viewPayload.value.mouseControl?.click()
-            is MouseEvent.Move -> viewPayload.value.mouseControl?.move(mouseEvent.dx, mouseEvent.dy)
-            is MouseEvent.Scroll -> viewPayload.value.mouseControl?.scroll(
+            MouseEvent.Click -> connectedState.mouseControl?.click()
+            is MouseEvent.Move -> connectedState.mouseControl?.move(mouseEvent.dx, mouseEvent.dy)
+            is MouseEvent.Scroll -> connectedState.mouseControl?.scroll(
                 mouseEvent.dx,
                 mouseEvent.dy
             )
         }
+    }
+
+    private fun getConnectedState(connectionState: ConnectionState): ConnectionState.Connected? {
+        return (connectionState as? ConnectionState.Connected)
     }
 }

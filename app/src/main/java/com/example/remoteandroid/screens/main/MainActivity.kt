@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity() {
         discoveryManager.apply {
             registerDefaultDeviceTypes()
             pairingLevel = PairingLevel.ON
-            start()
         }
         viewModel.onStart()
     }

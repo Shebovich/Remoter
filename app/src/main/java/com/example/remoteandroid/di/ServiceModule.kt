@@ -1,6 +1,7 @@
 package com.example.remoteandroid.di
 
 import android.content.Context
+import com.example.remoteandroid.data.mappers.ApplicationsMapper
 import com.example.remoteandroid.services.ResourceProvider
 import dagger.Module
 import dagger.Provides
