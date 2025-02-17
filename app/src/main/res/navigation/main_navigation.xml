@@ -11,12 +11,23 @@
         <action
             android:id="@+id/action_remoteFragment_to_tv_controls_fragment"
             app:destination="@id/tv_controls_fragment" />
+
+        <action
+            android:id="@+id/action_remoteFragment_to_applications_fragment"
+            app:destination="@id/applicationsFragment"/>
     </fragment>
 
     <fragment
         android:id="@+id/tv_controls_fragment"
         android:name="com.example.remoteandroid.screens.tv.TvControlsFragment"
         android:label="TvControlsFragment">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/applicationsFragment"
+        android:name="com.example.remoteandroid.screens.applications.ApplicationsFragment"
+        android:label="ApplicationsFragment">
 
     </fragment>
 </navigation>

@@ -1,9 +1,10 @@
-package com.example.remoteandroid.screens.remote
+package com.example.remoteandroid.screens.applications
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -13,7 +14,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.remoteandroid.R
-import com.example.remoteandroid.databinding.RemoteFragmentBinding
+import com.example.remoteandroid.databinding.ApplicationsFragmentBinding
+import com.example.remoteandroid.screens.applications.models.ApplicationsNavigationState
 import com.example.remoteandroid.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -21,10 +23,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class RemoteFragment : Fragment(R.layout.remote_fragment) {
+class ApplicationsFragment : Fragment(R.layout.applications_fragment) {
 
-    private lateinit var binding: RemoteFragmentBinding
-    private val viewModel: RemoteViewModel by viewModels()
+    private lateinit var binding: ApplicationsFragmentBinding
+    private val viewModel: ApplicationsViewModel by viewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -32,22 +34,20 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        binding = RemoteFragmentBinding.inflate(inflater, container, false)
+        binding = ApplicationsFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                findNavController().popBackStack()
+            }
+        })
         setUpRecycler()
-        binding.tvScreenButton.setOnClickListener {
-            val action = RemoteFragmentDirections.actionRemoteFragmentToTvControlsFragment()
-            findNavController().navigate(action)
-        }
-        binding.applicationsButton.setOnClickListener {
-            val action = RemoteFragmentDirections.actionRemoteFragmentToApplicationsFragment()
-            findNavController().navigate(action)
-        }
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+        viewModel.onViewCreated()
+        viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.contentViewState.collect { uiState ->
                     remoteAdapter.submitData(uiState.content)
@@ -63,29 +63,30 @@ class RemoteFragment : Fragment(R.layout.remote_fragment) {
         }
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.discoveryState.collectLatest { discoveryState ->
-                    viewModel.onDiscoveryStateChanged(discoveryState)
+                viewModel.navigationState.collectLatest { navigationState ->
+                    when(navigationState) {
+                        ApplicationsNavigationState.TV_CONTROLS -> navigateToTvScreen()
+                        ApplicationsNavigationState.DEFAULT -> Unit
+                    }
                 }
             }
         }
     }
 
+    private fun navigateToTvScreen() {
+        println("Navigated to TV screen")
+    }
+
     private val remoteAdapter by lazy {
-        RemoteAdapter(
-            onDeviceClicked = {
-                println("onDeviceClicked")
-                mainViewModel.connectToDevice(it)
+        ApplicationsAdapter(
+            onApplicationClicked = {
+               viewModel.onApplicationClicked(it)
             },
-            onSearchingTvClicked = {
-                mainViewModel.onStart()
-            }
         )
     }
 
-    private fun setUpRecycler() = with(binding.remoteRecycler) {
-        layoutManager = object : LinearLayoutManager(requireContext()) {
-            override fun canScrollVertically() = false
-        }
+    private fun setUpRecycler() = with(binding.applicationsRecycler) {
+        layoutManager = LinearLayoutManager(requireContext())
         adapter = remoteAdapter
         itemAnimator = null
     }

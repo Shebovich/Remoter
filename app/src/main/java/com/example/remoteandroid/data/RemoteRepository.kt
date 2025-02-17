@@ -3,6 +3,13 @@ package com.example.remoteandroid.data
 import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.device.ConnectableDeviceListener
 import com.connectsdk.service.DeviceService
+import com.connectsdk.service.DeviceService.PairingType
+import com.connectsdk.service.capability.KeyControl
+import com.connectsdk.service.capability.Launcher
+import com.connectsdk.service.capability.MouseControl
+import com.connectsdk.service.capability.PowerControl
+import com.connectsdk.service.capability.TVControl
+import com.connectsdk.service.capability.VolumeControl
 import com.connectsdk.service.command.ServiceCommandError
 import com.example.remoteandroid.domain.models.ConnectionState
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +32,20 @@ class RemoteRepository {
         callbackFlow {
             val deviceListener = object : ConnectableDeviceListener {
                 override fun onDeviceReady(device: ConnectableDevice?) {
-                    trySend(ConnectionState.Connected(connectableDevice))
+                    device?.let {
+                        println("services : ${device.services}")
+                        trySend(
+                            ConnectionState.Connected(
+                                device = device,
+                                powerControl = device.getCapability(PowerControl::class.java),
+                                volumeControl = device.getCapability(VolumeControl::class.java),
+                                tvControl = device.getCapability(TVControl::class.java),
+                                launcher = device.getCapability(Launcher::class.java),
+                                keyControl = device.getCapability(KeyControl::class.java),
+                                mouseControl = device.getCapability(MouseControl::class.java)
+                            )
+                        )
+                    }
                 }
 
                 override fun onDeviceDisconnected(device: ConnectableDevice?) {
@@ -35,7 +55,7 @@ class RemoteRepository {
                 override fun onPairingRequired(
                     device: ConnectableDevice?,
                     service: DeviceService?,
-                    pairingType: DeviceService.PairingType?,
+                    pairingType: PairingType?,
                 ) {
                     pairingType?.let { trySend(ConnectionState.PairingRequired(it)) }
                 }
@@ -51,11 +71,13 @@ class RemoteRepository {
                     device: ConnectableDevice?,
                     added: MutableList<String>?,
                     removed: MutableList<String>?,
-                ) = Unit
+                ) {
+                    println("onCapatabilityUpdated for device : $device and capatability : $added and removed $removed")
+                }
             }
             connectableDevice.apply {
                 addListener(deviceListener)
-                setPairingType(null)
+                setPairingType(PairingType.MIXED)
                 connect()
             }
 
